@@ -1,1 +1,1 @@
-docker build --network=host -t csc275-tensorflow .
+docker build --network=host -t csc275-tensorflow-3 .

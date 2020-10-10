@@ -93,18 +93,47 @@ classes = mods
 ###########
 
 # Build VT-CNN2 Neural Net model using Keras primitives -- 
-#  - Reshape [N,2,128] to [N,1,2,128] on input
+
 #  - Pass through 2 2DConv/ReLu layers
 #  - Pass through 2 Dense layers (ReLu and Softmax)
 #  - Perform categorical cross entropy optimization
 
 
-# SMackey:
+print("Input Shape: ", in_shp)
 dr = 0.5 # dropout rate (%)
 model = models.Sequential()
-model.add(Reshape([1]+in_shp, input_shape=in_shp))
-model.add(ZeroPadding2D((0, 2)))
+
+#  - Reshape [N,2,128] to [N,1,2,128] on input
+# SM: I don't really get why this is necessary, or how this is done on a matrix level, but ok...
+# I guess you can think of this shape as a very long narrow image
+# But that extra dimension is throwing me off. Oh well
+model.add(
+    Reshape([1]+in_shp, input_shape=in_shp)
+)
+
+# (None, 1, 2, 128)
+print("Reshape output shape: ", model.output_shape)
+
+
+
+# Pad zeros around everything, I believe this is in support of the convolution stage
+model.add(
+    # (symmetric_height_pad, symmetric_width_pad)
+    ZeroPadding2D((0, 2))
+)
+#       (height, width, uh_depth?)
+# (None, 1,      6,     128)
+print("ZeroPad output shape: ", model.output_shape)
+
+
+
+
+
 model.add(Convolution2D(256, 1, 3, border_mode='valid', activation="relu", name="conv1", init='glorot_uniform'))
+print("Mid Models")
+sys.exit(1)
+
+
 model.add(Dropout(dr))
 model.add(ZeroPadding2D((0, 2)))
 model.add(Convolution2D(80, 2, 3, border_mode="valid", activation="relu", name="conv2", init='glorot_uniform'))
