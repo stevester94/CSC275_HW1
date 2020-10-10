@@ -1,3 +1,4 @@
+#! /usr/bin/python2
 ###########
 # Block 1 #
 ###########
@@ -10,18 +11,18 @@ os.environ["KERAS_BACKEND"] = "theano"
 #os.environ["KERAS_BACKEND"] = "tensorflow"
 # os.environ["THEANO_FLAGS"]  = "device=gpu%d"%(1)
 import numpy as np
-import theano as th
-import theano.tensor as T
-from keras.utils import np_utils
-import keras.models as models
-from keras.layers.core import Reshape,Dense,Dropout,Activation,Flatten
-from keras.layers.noise import GaussianNoise
-from keras.layers.convolutional import Convolution2D, MaxPooling2D, ZeroPadding2D
-from keras.regularizers import *
-from keras.optimizers import adam
-import matplotlib.pyplot as plt
-import seaborn as sns
-import cPickle, random, sys, keras
+# import theano as th
+# import theano.tensor as T
+# from keras.utils import np_utils
+# import keras.models as models
+# from keras.layers.core import Reshape,Dense,Dropout,Activation,Flatten
+# from keras.layers.noise import GaussianNoise
+# from keras.layers.convolutional import Convolution2D, MaxPooling2D, ZeroPadding2D
+# from keras.regularizers import *
+# from keras.optimizers import adam
+# import matplotlib.pyplot as plt
+# import seaborn as sns
+import cPickle, random, sys
 
 
 ###########
@@ -50,7 +51,7 @@ X = np.vstack(X)
 np.random.seed(2016)
 n_examples = X.shape[0]
 n_train = n_examples * 0.5
-train_idx = np.random.choice(range(0,n_examples), size=n_train, replace=False)
+train_idx = np.random.choice(range(0,n_examples), size=int(n_train), replace=False)
 test_idx = list(set(range(0,n_examples))-set(train_idx))
 X_train = X[train_idx]
 X_test =  X[test_idx]
@@ -78,6 +79,9 @@ classes = mods
 #  - Pass through 2 2DConv/ReLu layers
 #  - Pass through 2 Dense layers (ReLu and Softmax)
 #  - Perform categorical cross entropy optimization
+
+print("Before we reach all the keras shit")
+sys.exit(1)
 
 dr = 0.5 # dropout rate (%)
 model = models.Sequential()

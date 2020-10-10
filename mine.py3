@@ -1,3 +1,4 @@
+#! /usr/bin/python3
 ###########
 # Block 1 #
 ###########
@@ -5,23 +6,23 @@
 # Import all the things we need ---
 #   by setting env variables before Keras import you can set up which backend and which GPU it uses
 # %matplotlib inline
-import os,random
-os.environ["KERAS_BACKEND"] = "theano"
-#os.environ["KERAS_BACKEND"] = "tensorflow"
+# import os,random
+# os.environ["KERAS_BACKEND"] = "theano"
+# os.environ["KERAS_BACKEND"] = "tensorflow"
 # os.environ["THEANO_FLAGS"]  = "device=gpu%d"%(1)
 import numpy as np
-import theano as th
-import theano.tensor as T
-from keras.utils import np_utils
+# import theano as th
+# import theano.tensor as T
+# from keras.utils import np_utils
 import keras.models as models
-from keras.layers.core import Reshape,Dense,Dropout,Activation,Flatten
-from keras.layers.noise import GaussianNoise
-from keras.layers.convolutional import Convolution2D, MaxPooling2D, ZeroPadding2D
-from keras.regularizers import *
-from keras.optimizers import adam
-import matplotlib.pyplot as plt
-import seaborn as sns
-import cPickle, random, sys, keras
+# from keras.layers.core import Reshape,Dense,Dropout,Activation,Flatten
+# from keras.layers.noise import GaussianNoise
+# from keras.layers.convolutional import Convolution2D, MaxPooling2D, ZeroPadding2D
+# from keras.regularizers import *
+# from keras.optimizers import adam
+# import matplotlib.pyplot as plt
+# import seaborn as sns
+import pickle, random, sys
 
 
 ###########
@@ -30,7 +31,8 @@ import cPickle, random, sys, keras
 
 # Load the dataset ...
 #  You will need to seperately download or generate this file
-Xd = cPickle.load(open("RML2016.10a_dict.dat",'rb'))
+# Xd = cPickle.load(open("RML2016.10a_dict.dat",'rb'))
+Xd = pickle.load(open("./RML2016.10a_dict_16snr_only.pkl",'rb'), encoding="latin1")
 snrs,mods = map(lambda j: sorted(list(set(map(lambda x: x[j], Xd.keys())))), [1,0])
 X = []  
 lbl = []
@@ -50,13 +52,15 @@ X = np.vstack(X)
 np.random.seed(2016)
 n_examples = X.shape[0]
 n_train = n_examples * 0.5
-train_idx = np.random.choice(range(0,n_examples), size=n_train, replace=False)
+
+train_idx = np.random.choice(range(0,n_examples), size=int(n_train), replace=False)
+
 test_idx = list(set(range(0,n_examples))-set(train_idx))
 X_train = X[train_idx]
 X_test =  X[test_idx]
 def to_onehot(yy):
-    yy1 = np.zeros([len(yy), max(yy)+1])
-    yy1[np.arange(len(yy)),yy] = 1
+    yy1 = np.zeros([len(list(yy)), max(list(yy))+1])
+    yy1[np.arange(len(list(yy))),yy] = 1
     return yy1
 Y_train = to_onehot(map(lambda x: mods.index(lbl[x][0]), train_idx))
 Y_test = to_onehot(map(lambda x: mods.index(lbl[x][0]), test_idx))
@@ -66,7 +70,7 @@ Y_test = to_onehot(map(lambda x: mods.index(lbl[x][0]), test_idx))
 ###########
 
 in_shp = list(X_train.shape[1:])
-print X_train.shape, in_shp
+print(X_train.shape, in_shp)
 classes = mods
 
 ###########
@@ -133,7 +137,7 @@ model.load_weights(filepath)
 
 # Show simple version of performance
 score = model.evaluate(X_test, Y_test, show_accuracy=True, verbose=0, batch_size=batch_size)
-print score
+print(score)
 
 
 ###########
@@ -204,7 +208,7 @@ for snr in snrs:
     
     cor = np.sum(np.diag(conf))
     ncor = np.sum(conf) - cor
-    print "Overall Accuracy: ", cor / (cor+ncor)
+    print("Overall Accuracy: ", cor / (cor+ncor))
     acc[snr] = 1.0*cor/(cor+ncor)
 
 ############
@@ -212,7 +216,7 @@ for snr in snrs:
 ############
 
 # Save results to a pickle file for plotting later
-print acc
+print(acc)
 fd = open('results_cnn2_d0.5.dat','wb')
 cPickle.dump( ("CNN2", 0.5, acc) , fd )
 
