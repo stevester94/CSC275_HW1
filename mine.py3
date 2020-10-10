@@ -2,6 +2,7 @@
 ###########
 # Block 1 #
 ###########
+import os
 
 # Import all the things we need ---
 #   by setting env variables before Keras import you can set up which backend and which GPU it uses
@@ -14,11 +15,19 @@ import numpy as np
 # import theano as th
 # import theano.tensor as T
 # from keras.utils import np_utils
-import keras.models as models
-from keras.layers.core import Reshape,Dense,Dropout,Activation,Flatten
-from keras.layers.noise import GaussianNoise
-from keras.layers.convolutional import Convolution2D, MaxPooling2D, ZeroPadding2D
-import keras
+
+
+# import keras.models as models
+# from keras.layers.core import Reshape,Dense,Dropout,Activation,Flatten
+# from keras.layers.convolutional import Convolution2D, MaxPooling2D, ZeroPadding2D
+# import keras
+
+import tensorflow as tf
+
+
+from tensorflow.keras.layers import Reshape,Dense,Dropout,Activation,Flatten, Convolution2D, MaxPooling2D, ZeroPadding2D
+import tensorflow.keras.models as models
+import tensorflow.keras as keras
 
 # from keras.regularizers import *
 # from keras.optimizers import adam
@@ -193,7 +202,7 @@ model.summary()
 
 # Set up some params 
 # SM: Originally 100
-nb_epoch = 2     # number of epochs to train on
+nb_epoch = 100     # number of epochs to train on
 batch_size = 1024  # training batch size
 
 ###########
@@ -305,15 +314,18 @@ for snr in snrs:
     for i in range(0,len(classes)):
         confnorm[i,:] = conf[i,:] / np.sum(conf[i,:])
 
-    plt.savefig(str(snr))
     plt.figure()
-
-    plot_confusion_matrix(confnorm, labels=classes, title="ConvNet Confusion Matrix (SNR=%d)"%(snr))
-    
     cor = np.sum(np.diag(conf))
     ncor = np.sum(conf) - cor
     print("Overall Accuracy: ", cor / (cor+ncor))
     acc[snr] = 1.0*cor/(cor+ncor)
+
+    plot_confusion_matrix(confnorm, labels=classes, title="ConvNet Confusion Matrix (SNR={}, Accuracy={:.2f})".format(snr, cor / (cor+ncor)))
+    
+    plt.savefig(str(snr))
+
+
+
 
 ############
 # Block 13 #
