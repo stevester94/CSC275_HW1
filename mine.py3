@@ -22,7 +22,7 @@ import keras
 
 # from keras.regularizers import *
 # from keras.optimizers import adam
-# import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt
 # import seaborn as sns
 import pickle, random, sys
 
@@ -192,7 +192,8 @@ model.summary()
 ###########
 
 # Set up some params 
-nb_epoch = 100     # number of epochs to train on
+# SM: Originally 100
+nb_epoch = 2     # number of epochs to train on
 batch_size = 1024  # training batch size
 
 ###########
@@ -201,22 +202,22 @@ batch_size = 1024  # training batch size
 
 # perform training ...
 #   - call the main training loop in keras for our network+dataset
+
 filepath = 'convmodrecnets_CNN2_0.5.wts.h5'
+
 history = model.fit(
     X_train,
     Y_train,
     batch_size=batch_size,
-    nb_epoch=nb_epoch,
-    show_accuracy=False,
+    epochs=nb_epoch,
     verbose=2,
     validation_data=(X_test, Y_test),
     callbacks = [
         keras.callbacks.ModelCheckpoint(filepath, monitor='val_loss', verbose=0, save_best_only=True, mode='auto'),
         keras.callbacks.EarlyStopping(monitor='val_loss', patience=5, verbose=0, mode='auto')
-    ])
+    ]
+)
 
-print("After  Train")
-sys.exit(1)
 # we re-load the best weights once training is finished
 model.load_weights(filepath)
 
@@ -227,9 +228,9 @@ model.load_weights(filepath)
 ###########
 
 # Show simple version of performance
-score = model.evaluate(X_test, Y_test, show_accuracy=True, verbose=0, batch_size=batch_size)
+# SM: this is "Scalar test loss"
+score = model.evaluate(X_test, Y_test, verbose=0, batch_size=batch_size)
 print(score)
-
 
 ###########
 # Block 9 #
@@ -241,6 +242,9 @@ plt.title('Training performance')
 plt.plot(history.epoch, history.history['loss'], label='train loss+error')
 plt.plot(history.epoch, history.history['val_loss'], label='val_error')
 plt.legend()
+
+plt.savefig("training_performance.png")
+plt.figure()
 
 ############
 # Block 10 #
@@ -271,6 +275,10 @@ for i in range(0,len(classes)):
     confnorm[i,:] = conf[i,:] / np.sum(conf[i,:])
 plot_confusion_matrix(confnorm, labels=classes)
 
+plt.savefig("confusion.png")
+plt.figure()
+
+
 ############
 # Block 12 #
 ############
@@ -280,12 +288,14 @@ acc = {}
 for snr in snrs:
 
     # extract classes @ SNR
-    test_SNRs = map(lambda x: lbl[x][1], test_idx)
+    test_SNRs = list(map(lambda x: lbl[x][1], test_idx))
     test_X_i = X_test[np.where(np.array(test_SNRs)==snr)]
     test_Y_i = Y_test[np.where(np.array(test_SNRs)==snr)]    
 
     # estimate classes
+    print(test_X_i.shape)
     test_Y_i_hat = model.predict(test_X_i)
+
     conf = np.zeros([len(classes),len(classes)])
     confnorm = np.zeros([len(classes),len(classes)])
     for i in range(0,test_X_i.shape[0]):
@@ -294,7 +304,10 @@ for snr in snrs:
         conf[j,k] = conf[j,k] + 1
     for i in range(0,len(classes)):
         confnorm[i,:] = conf[i,:] / np.sum(conf[i,:])
+
+    plt.savefig(str(snr))
     plt.figure()
+
     plot_confusion_matrix(confnorm, labels=classes, title="ConvNet Confusion Matrix (SNR=%d)"%(snr))
     
     cor = np.sum(np.diag(conf))
@@ -307,17 +320,16 @@ for snr in snrs:
 ############
 
 # Save results to a pickle file for plotting later
-print(acc)
-fd = open('results_cnn2_d0.5.dat','wb')
-cPickle.dump( ("CNN2", 0.5, acc) , fd )
+# print(acc)
+# fd = open('results_cnn2_d0.5.dat','wb')
+# cPickle.dump( ("CNN2", 0.5, acc) , fd )
 
 ############
 # Block 14 #
 ############
 # Plot accuracy curve
-plt.plot(snrs, map(lambda x: acc[x], snrs))
+plt.plot(snrs, list(map(lambda x: acc[x], snrs)))
 plt.xlabel("Signal to Noise Ratio")
 plt.ylabel("Classification Accuracy")
 plt.title("CNN2 Classification Accuracy on RadioML 2016.10 Alpha")
-
-
+plt.savefig("accuracy_curve.png")
