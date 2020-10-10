@@ -18,6 +18,8 @@ import keras.models as models
 from keras.layers.core import Reshape,Dense,Dropout,Activation,Flatten
 from keras.layers.noise import GaussianNoise
 from keras.layers.convolutional import Convolution2D, MaxPooling2D, ZeroPadding2D
+import keras
+
 # from keras.regularizers import *
 # from keras.optimizers import adam
 # import matplotlib.pyplot as plt
@@ -126,29 +128,64 @@ model.add(
 print("ZeroPad output shape: ", model.output_shape)
 
 
+print("Convolution2D (First) Input Shape", model.output_shape)
+model.add(
+# Originally: Convolution2D(256,1,3, border_mode='valid', activation="relu", name="conv1", init='glorot_uniform')
+    Convolution2D(
+        filters=256, 
+        kernel_size=1,
+        strides=3, 
+        activation="relu", 
+        kernel_initializer='glorot_uniform')
+)
+print("Convolution2D (First) Output Shape", model.output_shape)
 
-
-
-model.add(Convolution2D(256, 1, 3, border_mode='valid', activation="relu", name="conv1", init='glorot_uniform'))
-print("Mid Models")
-sys.exit(1)
-
-
+# The Dropout layer randomly sets input units to 0 with a frequency of rate at each step during training time, which helps prevent overfitting. 
+# Inputs not set to 0 are scaled up by 1/(1 - rate) such that the sum over all inputs is unchanged.
 model.add(Dropout(dr))
 model.add(ZeroPadding2D((0, 2)))
-model.add(Convolution2D(80, 2, 3, border_mode="valid", activation="relu", name="conv2", init='glorot_uniform'))
+
+
+print("Convolution2D (Second) Input Shape", model.output_shape)
+model.add(
+    Convolution2D(filters=80, 
+        kernel_size=1, # SM WARNING: Originally 2
+        strides=3,
+        activation="relu",
+        kernel_initializer='glorot_uniform')
+)
+
 model.add(Dropout(dr))
+
+
+
 model.add(Flatten())
-model.add(Dense(256, activation='relu', init='he_normal', name="dense1"))
+print("Flatten Output Shape: ", model.output_shape)
+
+# SM: So the number of units is the output number, input can be anything (as long as one dimensional)
+model.add(
+    # Originally:     Dense(256,activation='relu',init='he_normal',name="dense1")
+    Dense(
+        units=256,
+        activation='relu',
+        kernel_initializer='he_normal' # I ASSUME kernel is what was initialized using he_normal
+    )  
+)
+
+print("Dense (First) Output Shape: ", model.output_shape)
+
 model.add(Dropout(dr))
-model.add(Dense( len(classes), init='he_normal', name="dense2" ))
+model.add(
+    # SM: Weird this did not come with an activation
+    Dense(
+        units=len(classes),
+        kernel_initializer='he_normal')
+)
 model.add(Activation('softmax'))
 model.add(Reshape([len(classes)]))
 model.compile(loss='categorical_crossentropy', optimizer='adam')
 model.summary()
 
-print("After  models")
-sys.exit(1)
 
 ###########
 # Block 6 #
@@ -165,7 +202,8 @@ batch_size = 1024  # training batch size
 # perform training ...
 #   - call the main training loop in keras for our network+dataset
 filepath = 'convmodrecnets_CNN2_0.5.wts.h5'
-history = model.fit(X_train,
+history = model.fit(
+    X_train,
     Y_train,
     batch_size=batch_size,
     nb_epoch=nb_epoch,
@@ -176,8 +214,13 @@ history = model.fit(X_train,
         keras.callbacks.ModelCheckpoint(filepath, monitor='val_loss', verbose=0, save_best_only=True, mode='auto'),
         keras.callbacks.EarlyStopping(monitor='val_loss', patience=5, verbose=0, mode='auto')
     ])
+
+print("After  Train")
+sys.exit(1)
 # we re-load the best weights once training is finished
 model.load_weights(filepath)
+
+
 
 ###########
 # Block 8 #
