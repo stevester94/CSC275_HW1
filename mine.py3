@@ -15,9 +15,9 @@ import numpy as np
 # import theano.tensor as T
 # from keras.utils import np_utils
 import keras.models as models
-# from keras.layers.core import Reshape,Dense,Dropout,Activation,Flatten
-# from keras.layers.noise import GaussianNoise
-# from keras.layers.convolutional import Convolution2D, MaxPooling2D, ZeroPadding2D
+from keras.layers.core import Reshape,Dense,Dropout,Activation,Flatten
+from keras.layers.noise import GaussianNoise
+from keras.layers.convolutional import Convolution2D, MaxPooling2D, ZeroPadding2D
 # from keras.regularizers import *
 # from keras.optimizers import adam
 # import matplotlib.pyplot as plt
@@ -32,7 +32,7 @@ import pickle, random, sys
 # Load the dataset ...
 #  You will need to seperately download or generate this file
 # Xd = cPickle.load(open("RML2016.10a_dict.dat",'rb'))
-Xd = pickle.load(open("./RML2016.10a_dict_16snr_only.pkl",'rb'), encoding="latin1")
+Xd = pickle.load(open("./RML2016.10a_dict.pkl",'rb'), encoding="latin1")
 snrs,mods = map(lambda j: sorted(list(set(map(lambda x: x[j], Xd.keys())))), [1,0])
 X = []  
 lbl = []
@@ -58,12 +58,27 @@ train_idx = np.random.choice(range(0,n_examples), size=int(n_train), replace=Fal
 test_idx = list(set(range(0,n_examples))-set(train_idx))
 X_train = X[train_idx]
 X_test =  X[test_idx]
+
+# Butchered the fuck out of this to make it py3 compliant, yeesh
 def to_onehot(yy):
-    yy1 = np.zeros([len(list(yy)), max(list(yy))+1])
-    yy1[np.arange(len(list(yy))),yy] = 1
+    l = list(yy)
+    maximum_encoding = max(l)
+    len_input        = len(l)
+
+    yy1 = np.zeros([len_input, maximum_encoding+1]) # Builds a big ol' m by n matrix
+
+    for index,val in enumerate(l):
+        yy1[index][val] = 1
+    
+    print(yy1)
+
     return yy1
+
+# The lambda gets the index of the modulation in our big list of modulations
+# Resulting map is just a big ol' 1d list of ints
 Y_train = to_onehot(map(lambda x: mods.index(lbl[x][0]), train_idx))
 Y_test = to_onehot(map(lambda x: mods.index(lbl[x][0]), test_idx))
+
 
 ###########
 # Block 4 #
@@ -83,6 +98,8 @@ classes = mods
 #  - Pass through 2 Dense layers (ReLu and Softmax)
 #  - Perform categorical cross entropy optimization
 
+
+# SMackey:
 dr = 0.5 # dropout rate (%)
 model = models.Sequential()
 model.add(Reshape([1]+in_shp, input_shape=in_shp))
@@ -101,6 +118,8 @@ model.add(Reshape([len(classes)]))
 model.compile(loss='categorical_crossentropy', optimizer='adam')
 model.summary()
 
+print("After  models")
+sys.exit(1)
 
 ###########
 # Block 6 #

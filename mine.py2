@@ -62,6 +62,7 @@ def to_onehot(yy):
 Y_train = to_onehot(map(lambda x: mods.index(lbl[x][0]), train_idx))
 Y_test = to_onehot(map(lambda x: mods.index(lbl[x][0]), test_idx))
 
+
 ###########
 # Block 4 #
 ###########
