@@ -1,0 +1,9 @@
+FROM centos:8
+
+RUN dnf update -y
+RUN dnf install -y tmux vim python3 python2
+
+RUN pip3 install theano
+RUN pip3 install keras
+
+WORKDIR /HW1
