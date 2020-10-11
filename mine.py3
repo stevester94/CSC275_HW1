@@ -115,9 +115,10 @@ dr = 0.5 # dropout rate (%)
 model = models.Sequential()
 
 #  - Reshape [N,2,128] to [N,1,2,128] on input
-# SM: I don't really get why this is necessary, or how this is done on a matrix level, but ok...
-# I guess you can think of this shape as a very long narrow image
-# But that extra dimension is throwing me off. Oh well
+# SM: We do this because keras assumes you have the notion of 'channels'
+# IE, for Conv2D: 
+#    Input: 4+D tensor with shape: batch_shape + (channels, rows, cols)
+# We are saying we have one channel, an I row and a Q row, and then all the samples are the columns
 model.add(
     Reshape([1]+in_shp, input_shape=in_shp)
 )
@@ -149,6 +150,9 @@ model.add(
 )
 print("Convolution2D (First) Output Shape", model.output_shape)
 
+print("Exiting")
+sys.exit(1)
+
 # The Dropout layer randomly sets input units to 0 with a frequency of rate at each step during training time, which helps prevent overfitting. 
 # Inputs not set to 0 are scaled up by 1/(1 - rate) such that the sum over all inputs is unchanged.
 model.add(Dropout(dr))
@@ -158,7 +162,7 @@ model.add(ZeroPadding2D((0, 2)))
 print("Convolution2D (Second) Input Shape", model.output_shape)
 model.add(
     Convolution2D(filters=80, 
-        kernel_size=1, # SM WARNING: Originally 2
+        kernel_size=2, # SM WARNING: Originally 2
         strides=3,
         activation="relu",
         kernel_initializer='glorot_uniform')
