@@ -186,7 +186,23 @@ print("Flatten Output Shape: ", model.output_shape)
 model.add(
     # Originally:     Dense(256,activation='relu',init='he_normal',name="dense1")
     Dense(
-        units=256, # OG 256
+        units=128, # OG 256
+        activation='relu',
+        kernel_initializer='he_normal' # I ASSUME kernel is what was initialized using he_normal
+    )  
+)
+model.add(
+    # Originally:     Dense(256,activation='relu',init='he_normal',name="dense1")
+    Dense(
+        units=128, # OG 256
+        activation='relu',
+        kernel_initializer='he_normal' # I ASSUME kernel is what was initialized using he_normal
+    )  
+)
+model.add(
+    # Originally:     Dense(256,activation='relu',init='he_normal',name="dense1")
+    Dense(
+        units=128, # OG 256
         activation='relu',
         kernel_initializer='he_normal' # I ASSUME kernel is what was initialized using he_normal
     )  
@@ -351,6 +367,8 @@ for snr in snrs:
 # Block 14 #
 ############
 # Plot accuracy curve
+plt.figure()
+
 plt.plot(snrs, list(map(lambda x: acc[x], snrs)))
 plt.xlabel("Signal to Noise Ratio")
 plt.ylabel("Classification Accuracy")
