@@ -119,6 +119,9 @@ model = models.Sequential()
 # IE, for Conv2D: 
 #    Input: 4+D tensor with shape: batch_shape + (channels, rows, cols)
 # We are saying we have one channel, an I row and a Q row, and then all the samples are the columns
+
+# His format is correct, it is just assuming channels come first 
+#   (I know this becuase the filter output dimension is first in his pynb)
 model.add(
     Reshape([1]+in_shp, input_shape=in_shp)
 )
@@ -131,7 +134,10 @@ print("Reshape output shape: ", model.output_shape)
 # Pad zeros around everything, I believe this is in support of the convolution stage
 model.add(
     # (symmetric_height_pad, symmetric_width_pad)
-    ZeroPadding2D((0, 2))
+    ZeroPadding2D(
+        (1, 2),
+        data_format="channels_first"
+    )
 )
 #       (height, width, uh_depth?)
 # (None, 1,      6,     128)
@@ -143,15 +149,14 @@ model.add(
 # Originally: Convolution2D(256,1,3, border_mode='valid', activation="relu", name="conv1", init='glorot_uniform')
     Convolution2D(
         filters=256, 
-        kernel_size=1,
-        strides=3, 
+        kernel_size=3,
+        strides=1, 
         activation="relu", 
-        kernel_initializer='glorot_uniform')
+        kernel_initializer='glorot_uniform',
+        data_format="channels_first"
+    )
 )
 print("Convolution2D (First) Output Shape", model.output_shape)
-
-print("Exiting")
-sys.exit(1)
 
 # The Dropout layer randomly sets input units to 0 with a frequency of rate at each step during training time, which helps prevent overfitting. 
 # Inputs not set to 0 are scaled up by 1/(1 - rate) such that the sum over all inputs is unchanged.
@@ -162,10 +167,12 @@ model.add(ZeroPadding2D((0, 2)))
 print("Convolution2D (Second) Input Shape", model.output_shape)
 model.add(
     Convolution2D(filters=80, 
-        kernel_size=2, # SM WARNING: Originally 2
-        strides=3,
+        kernel_size=3, # SM WARNING: Originally 2
+        strides=2,
         activation="relu",
-        kernel_initializer='glorot_uniform')
+        kernel_initializer='glorot_uniform',
+        data_format="channels_first"
+    )
 )
 
 model.add(Dropout(dr))
@@ -179,7 +186,7 @@ print("Flatten Output Shape: ", model.output_shape)
 model.add(
     # Originally:     Dense(256,activation='relu',init='he_normal',name="dense1")
     Dense(
-        units=256,
+        units=256, # OG 256
         activation='relu',
         kernel_initializer='he_normal' # I ASSUME kernel is what was initialized using he_normal
     )  
@@ -207,7 +214,7 @@ model.summary()
 # Set up some params 
 # SM: Originally 100
 nb_epoch = 100     # number of epochs to train on
-batch_size = 1024  # training batch size
+batch_size = 1024  # training batch size (OG 1024)
 
 ###########
 # Block 7 #
