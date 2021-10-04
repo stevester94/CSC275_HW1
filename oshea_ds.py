@@ -5,7 +5,7 @@ import numpy as np
 import torch
 
 class OShea_DS(torch.utils.data.Dataset):
-    def __init__(self, path:str="./RML2016.10a_dict_16snr_only.pkl") -> None:
+    def __init__(self, path:str="./RML2016.10a_dict_16snr_only.pkl", min_snr:int=None, max_snr:int=None) -> None:
         """
         args:
             domain_configs: {
@@ -32,15 +32,18 @@ class OShea_DS(torch.utils.data.Dataset):
         }
 
         Xd = pickle.load(open(path,'rb'), encoding="latin1")
+        self.Xd = Xd
         snrs,mods = map(lambda j: sorted(list(set(map(lambda x: x[j], Xd.keys())))), [1,0])
         data = []  
         lbl = []
         for mod in mods:
             for snr in snrs:
-                for x in Xd[(mod,snr)]:
-                    data.append(
-                        (x.astype(np.single), self.modulation_to_int(mod), snr)
-                    )
+
+                if (max_snr == None or snr < max_snr) and (min_snr == None or snr > min_snr):
+                    for x in Xd[(mod,snr)]:
+                        data.append(
+                            (x.astype(np.single), self.modulation_to_int(mod), snr)
+                        )
 
 
         self.data = data
@@ -53,6 +56,9 @@ class OShea_DS(torch.utils.data.Dataset):
 
     def modulation_to_int(self, modulation:str):
         return self.modulation_mapping[modulation]
+
+    def get_snrs(self):
+        return list(set(map(lambda i: i[2], self.data)))
         
 
 
@@ -62,4 +68,4 @@ if __name__ == "__main__":
     for x in ds:
         print(x[0].shape)
 
-    print(len(ds))
+    print(ds.get_snrs())
