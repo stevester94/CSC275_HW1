@@ -61,7 +61,7 @@ class AMC_CNN_OShea(nn.Module):
     def forward(self, x, u):
         y_hat = self.net(x.reshape(-1, 1, 2, 128))
 
-        return y_hat, torch.sum(y_hat, 1, keepdim=True)
+        return y_hat, torch.sum(y_hat, 1, keepdim=False)
 
     def set_requires_grad(self, nets, requires_grad=False):
         if not isinstance(nets, list):
