@@ -52,8 +52,8 @@ start_time_secs = time.time()
 ###################################
 # Build the dataset
 ###################################
-source_ds = OShea_DS()
-target_ds = OShea_DS()
+source_ds = OShea_DS(snrs_to_get=[-8, -6])
+target_ds = OShea_DS(snrs_to_get=[16,18])
 
 def wrap_in_dataloader(ds):
     return torch.utils.data.DataLoader(

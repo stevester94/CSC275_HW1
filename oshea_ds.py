@@ -5,7 +5,7 @@ import numpy as np
 import torch
 
 class OShea_DS(torch.utils.data.Dataset):
-    def __init__(self, path:str="./RML2016.10a_dict_16snr_only.pkl", min_snr:int=None, max_snr:int=None) -> None:
+    def __init__(self, path:str="/mnt/wd500GB/CSC500/csc500-super-repo/datasets/RML2016.10a_dict.pkl", snrs_to_get:list=None) -> None:
         """
         args:
             domain_configs: {
@@ -39,7 +39,7 @@ class OShea_DS(torch.utils.data.Dataset):
         for mod in mods:
             for snr in snrs:
 
-                if (max_snr == None or snr < max_snr) and (min_snr == None or snr > min_snr):
+                if snrs_to_get == None or snr in snrs_to_get:
                     for x in Xd[(mod,snr)]:
                         data.append(
                             (x.astype(np.single), self.modulation_to_int(mod), snr)
@@ -57,6 +57,8 @@ class OShea_DS(torch.utils.data.Dataset):
     def modulation_to_int(self, modulation:str):
         return self.modulation_mapping[modulation]
 
+    # [0, 2, 4, 6, 8, 10, 12, 14, 16, 18, -20, -18, -16, -14, -12, -10, -8, -6, -4, -2]
+
     def get_snrs(self):
         return list(set(map(lambda i: i[2], self.data)))
         
@@ -64,8 +66,12 @@ class OShea_DS(torch.utils.data.Dataset):
 
 if __name__ == "__main__":
     ds = OShea_DS()
-
-    for x in ds:
-        print(x[0].shape)
-
     print(ds.get_snrs())
+
+    ds = OShea_DS(snrs_to_get=[10, -4])
+    print(ds.get_snrs())
+
+    # for x in ds:
+        # print(x[0].shape)
+
+    
