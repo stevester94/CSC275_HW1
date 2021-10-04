@@ -42,7 +42,7 @@ class AMC_CNN_OShea(nn.Module):
             nn.Linear(128, 128), nn.ReLU(True),
             nn.Linear(128, 128), nn.ReLU(True),
             nn.Linear(128, NUM_CLASSES),
-            nn.Softmax()
+            nn.LogSoftmax(dim=1)
         )
         self.init_weight(self.net)
 

@@ -43,7 +43,7 @@ import pickle, random, sys
 # Load the dataset ...
 #  You will need to seperately download or generate this file
 # Xd = cPickle.load(open("RML2016.10a_dict.dat",'rb'))
-Xd = pickle.load(open("./RML2016.10a_dict.pkl",'rb'), encoding="latin1")
+Xd = pickle.load(open("./RML2016.10a_dict_16snr_only.pkl",'rb'), encoding="latin1")
 snrs,mods = map(lambda j: sorted(list(set(map(lambda x: x[j], Xd.keys())))), [1,0])
 X = []  
 lbl = []
